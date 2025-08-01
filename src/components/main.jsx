@@ -1,12 +1,17 @@
 // React and Router
 import { useNavigate, Navigate } from 'react-router-dom';
 
-// MUI Components
+// React & Utility
 import PropTypes from 'prop-types';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+
+
+// MUI Components
+import {
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 
 // MUI Icons
@@ -15,12 +20,15 @@ import EventIcon from '@mui/icons-material/Event';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-
 import GroupIcon from '@mui/icons-material/Group';
 import BadgeIcon from '@mui/icons-material/Badge';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import CloudCircleIcon from '@mui/icons-material/CloudCircle';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+
 
 // Toolpad Core
 import { AppProvider } from '@toolpad/core/AppProvider';
@@ -29,7 +37,7 @@ import { useDemoRouter } from '@toolpad/core/internal';
 
 // Utilities
 import useSwalTheme from '../utils/useSwalTheme';
-import { isTokenValid, decodeToken } from "../utils/tokenUtils";
+import { isTokenValid, decodeToken } from '../utils/tokenUtils';
 
 // Pages
 import Home from './Home';
@@ -39,34 +47,86 @@ import AddResident from './Events/AddEvents';
 import AttendanceLogs from './Attendance_logs';
 import AdminControl from './AdminPanel';
 import NotAuthorized from './NotAuthorized';
+import ActivityList from './Evaluation/activity/ActivityList';
+import CreateActivity from './Evaluation/activity/activity';
+import EvaluationParticipant from './evaluaton_participant';
+
+
 
 
 const NAVIGATION = [
   { kind: 'header', title: 'Main items', icon: <DashboardIcon /> },
   { segment: '', title: 'Dashboard', icon: <DashboardIcon /> },
-
   { kind: 'divider' },
 
   { kind: 'header', title: 'Participants', icon: <GroupIcon /> },
-  { segment: 'participant', title: 'Registered Participants', icon: <BadgeIcon /> },
-
-  { kind: 'divider', header: 'Events & Id Management', icon: <EventIcon /> },
-
   {
-    segment: 'events', title: 'Events Management', icon: <EventIcon />, children: [
-      { segment: 'list', title: 'Events List', icon: <ListAltIcon /> },
-      { segment: 'editor', title: 'Add Events', icon: <AddBoxIcon /> },
-    ]
+    segment: 'participant',
+    title: 'Registered Participants',
+    icon: <BadgeIcon />,
+  },
+  {
+    segment: 'id-management',
+    title: 'ID Management',
+    icon: <CreditCardIcon />, // Changed from BadgeIcon
+  },
+
+  { kind: 'divider', header: 'Events & Activities', icon: <EventIcon /> },
+  {
+    segment: 'events',
+    title: 'Events Management',
+    icon: <EventIcon />,
+    children: [
+      {
+        segment: 'list',
+        title: 'Events List',
+        icon: <ListAltIcon />,
+      },
+      {
+        segment: 'editor',
+        title: 'Add Events',
+        icon: <AddBoxIcon />,
+      },
+    ],
+  },
+  {
+    segment: 'activity',
+    title: 'Activity Management',
+    icon: <ManageHistoryIcon />,
+    children: [
+      {
+        segment: 'list',
+        title: 'Activity List',
+        icon: <ListAltIcon />,
+      },
+      {
+        segment: 'create',
+        title: 'Create Activity',
+        icon: <AddBoxIcon />,
+      },
+    ],
+  },
+  {
+    segment: 'evaluation',
+    title: 'Evaluation Participants',
+    icon: <AssignmentIndIcon />, // Changed from BadgeIcon
   },
 
   { kind: 'divider' },
-
-  { segment: 'logs', title: 'Attendance Logs', icon: <ManageHistoryIcon /> },
+  {
+    segment: 'logs',
+    title: 'Attendance Logs',
+    icon: <FactCheckIcon />, // Better than ListAlt for logs
+  },
 
   { kind: 'divider' },
-
-  { segment: 'admin', title: 'Admin Control', icon: <AdminPanelSettingsIcon /> },
+  {
+    segment: 'admin',
+    title: 'Admin Control',
+    icon: <AdminPanelSettingsIcon />,
+  },
 ];
+
 
 const demoTheme = createTheme({
   cssVariables: {
@@ -88,40 +148,29 @@ function DemoPageContent({ pathname }) {
   const token = localStorage.getItem("authToken");
   const isValid = token && isTokenValid(token);
   const decodeTokens = token && decodeToken(token);
-  const role = decodeTokens.role;
-  
+  const role = decodeTokens?.role;
 
-
-  if (!isValid) {
-    return <Navigate to="/" />;
-  }
+  if (!isValid) return <Navigate to="/" />;
 
   if (pathname === '/admin') {
-    if (role === "Super Admin") {
-      return <AdminControl />;
-    } else {
-
-      return <NotAuthorized />;
-    }
+    return role === 'Super Admin' ? <AdminControl /> : <NotAuthorized />;
   }
-
 
   switch (pathname) {
-    case '/':
-      return <Home />;
-    case '/participant':
-      return <RegisteredPage />;
-    case '/events/list':
-      return <ResidentList />;
-    case '/logs':
-      return <AttendanceLogs />;
-    case '/events/editor':
-      return <AddResident />;
-    default:
-      return <Home />;
+    case '/': return <Home />;
+    case '/participant': return <RegisteredPage />;
+    case '/events/list': return <ResidentList />;
+    case '/events/editor': return <AddResident />;
+    case '/evaluation': return <EvaluationParticipant />;
+    case '/id-management':
+      window.location.href = 'http://localhost:3001/all-digital-id';
+      return null;
+    case '/logs': return <AttendanceLogs />;
+    case '/activity/list':return <ActivityList/>
+    case '/activity/create':return <CreateActivity/>
+    default: return <Home />;
   }
 }
-
 DemoPageContent.propTypes = {
   pathname: PropTypes.string.isRequired,
 };

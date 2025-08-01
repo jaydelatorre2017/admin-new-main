@@ -8,7 +8,7 @@ import useSwalTheme from '../utils/useSwalTheme';
 import SearchIcon from '@mui/icons-material/Search';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import AllInboxIcon from '@mui/icons-material/AllInbox';
-import CancelIcon from '@mui/icons-material/Cancel';
+import CancelIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
@@ -77,6 +77,36 @@ const AttendanceLogs = () => {
       <Box sx={{ mt: 2 }}>No Attendance Data</Box>
     </Box>
   );
+    const handleDeleteAll = async () => {
+  const result = await SwalInstance.fire({
+    title: 'Are you sure?',
+    text: "This will delete all attendance records permanently!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete all!',
+    cancelButtonText: 'Cancel',
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const response = await fetch(`${API_URL}/api/attendance`, {
+        method: 'DELETE',
+        headers: { [headername]: keypoint }
+      });
+
+      if (response.ok) {
+        SwalInstance.fire('Deleted!', 'All attendance records have been deleted.', 'success');
+        setData([]);
+        setFiltered([]);
+      } else {
+        SwalInstance.fire('Error', 'Failed to delete records.', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      SwalInstance.fire('Error', 'Something went wrong.', 'error');
+    }
+  }
+};
 
   const handleExport = () => {
     const worksheet = XLSX.utils.json_to_sheet(filtered);
@@ -112,6 +142,12 @@ const AttendanceLogs = () => {
                 <DownloadForOfflineIcon />
               </IconButton>
             </Tooltip>
+            <Tooltip title="Delete All Records">
+  <IconButton color="error" onClick={handleDeleteAll}>
+    <CancelIcon />
+  </IconButton>
+</Tooltip>
+
           </Box>
         </Grid>
       </Grid>

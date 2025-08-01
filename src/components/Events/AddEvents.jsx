@@ -17,34 +17,55 @@ import {
   Grid,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
-import { API_URL, headername, keypoint } from '../../utils/config';
+import { API_URL, headername, keypoint } from "../../utils/config";
 
 const CreateEvent = () => {
-  const [Event, setEvent] = useState({
+  const [event, setEvent] = useState({
     event_name: "",
     event_host: "",
     event_venue: "",
     event_description: "",
-    event_start_date: "",
-    event_end_date: "",
+    event_start_date: null,
+    event_end_date: null,
     activate_event: false,
-    required_receipt: false,
+    required_receipt: false, // Default value is false
+    certificateFile: null, // For file handling
   });
 
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const SwalInstance = useSwalTheme();
 
-
-
-
-
   const handleChange = (e) => {
-    setEvent({ ...Event, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+  
+      setEvent((prevEvent) => ({
+        ...prevEvent,
+        [name]: value,
+      }));
+    
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setEvent((prevEvent) => ({ ...prevEvent, certificateFile: file }));
+  };
+
+  const handleDateChange = (field) => (newValue) => {
+    setEvent((prevEvent) => ({
+      ...prevEvent,
+      [field]: newValue ? newValue.format("YYYY-MM-DD") : null,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -65,7 +86,7 @@ const CreateEvent = () => {
 
     const result = await SwalInstance.fire({
       title: "Are you sure?",
-      text: "Do you want to create this Event?",
+      text: "Do you want to create this event?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, create it!",
@@ -76,25 +97,36 @@ const CreateEvent = () => {
 
     setLoading(true);
 
-    try {
-      const payload = {
-        name: Event.event_name,
-        host: Event.event_host,
-        description: Event.event_description,
-        start_date: Event.event_start_date,
-        end_date: Event.event_end_date,
-        active: Event.activate_event,
-        required_reciept: Event.required_receipt,
-        venue: Event.event_venue,
-      };
+    const formData = new FormData();
+    formData.append("name", event.event_name);
+    formData.append("host", event.event_host);
+    formData.append("description", event.event_description);
+    formData.append("start_date", event.event_start_date);
+    formData.append("end_date", event.event_end_date);
+    formData.append("active", event.activate_event);
+    formData.append("required_receipt", event.required_receipt); // Ensure it's boolean
+    formData.append("venue", event.event_venue);
 
-      const response = await axios.post(`${API_URL}/api/events/create_event`, payload,{
-        headers: { [headername]: keypoint }
+    if (event.certificateFile) {
+      formData.append("certificateFile", event.certificateFile);
+    }
+
+    // Debugging: log the formData contents
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    try {
+      const response = await axios.post(`${API_URL}/api/events/create_event`, formData, {
+        headers: {
+          [headername]: keypoint,
+          "Content-Type": "multipart/form-data", // Set content type to handle file upload
+        },
       });
 
       SwalInstance.fire("Success", response.data.message, "success");
     } catch (error) {
-      SwalInstance.fire("Error", "Failed to add Event.", "error");
+      SwalInstance.fire("Error", "Failed to add event.", "error");
       console.error("Error creating event:", error);
     } finally {
       setLoading(false);
@@ -106,7 +138,9 @@ const CreateEvent = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>Create Event</Typography>
+        <Typography variant="h4" gutterBottom>
+          Create Event
+        </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -114,7 +148,7 @@ const CreateEvent = () => {
                 fullWidth
                 label="Event Name"
                 name="event_name"
-                value={Event.event_name}
+                value={event.event_name}
                 onChange={handleChange}
                 required
               />
@@ -124,7 +158,7 @@ const CreateEvent = () => {
                 fullWidth
                 label="Event Host"
                 name="event_host"
-                value={Event.event_host}
+                value={event.event_host}
                 onChange={handleChange}
                 required
               />
@@ -135,7 +169,7 @@ const CreateEvent = () => {
                 fullWidth
                 label="Event Description"
                 name="event_description"
-                value={Event.event_description}
+                value={event.event_description}
                 onChange={handleChange}
                 multiline
                 minRows={2}
@@ -147,8 +181,8 @@ const CreateEvent = () => {
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label="Start Date"
-                  value={Event.event_start_date ? dayjs(Event.event_start_date) : null}
-                  onChange={(newValue) => setEvent({ ...Event, event_start_date: newValue ? newValue.format("YYYY-MM-DD") : "" })}
+                  value={event.event_start_date ? dayjs(event.event_start_date) : null}
+                  onChange={handleDateChange("event_start_date")}
                   slotProps={{ textField: { fullWidth: true, required: true } }}
                 />
               </LocalizationProvider>
@@ -157,9 +191,9 @@ const CreateEvent = () => {
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label="End Date"
-                  value={Event.event_end_date ? dayjs(Event.event_end_date) : null}
-                  minDate={Event.event_start_date ? dayjs(Event.event_start_date) : undefined}
-                  onChange={(newValue) => setEvent({ ...Event, event_end_date: newValue ? newValue.format("YYYY-MM-DD") : "" })}
+                  value={event.event_end_date ? dayjs(event.event_end_date) : null}
+                  minDate={event.event_start_date ? dayjs(event.event_start_date) : undefined}
+                  onChange={handleDateChange("event_end_date")}
                   slotProps={{ textField: { fullWidth: true, required: true } }}
                 />
               </LocalizationProvider>
@@ -170,8 +204,8 @@ const CreateEvent = () => {
                 <InputLabel>Activate Event</InputLabel>
                 <Select
                   name="activate_event"
-                  value={Event.activate_event}
-                  onChange={(e) => setEvent({ ...Event, activate_event: e.target.value })}
+                  value={event.activate_event}
+                  onChange={handleChange}
                   label="Activate Event"
                 >
                   <MenuItem value={true}>Yes</MenuItem>
@@ -185,8 +219,8 @@ const CreateEvent = () => {
                 <InputLabel>Required Receipt</InputLabel>
                 <Select
                   name="required_receipt"
-                  value={Event.required_receipt}
-                  onChange={(e) => setEvent({ ...Event, required_receipt: e.target.value })}
+                  value={event.required_receipt === null ? false : event.required_receipt} // Force boolean value
+                  onChange={handleChange}
                   label="Required Receipt"
                 >
                   <MenuItem value={true}>Yes</MenuItem>
@@ -200,13 +234,39 @@ const CreateEvent = () => {
                 fullWidth
                 label="Event Venue"
                 name="event_venue"
-                value={Event.event_venue}
+                value={event.event_venue}
                 onChange={handleChange}
                 multiline
                 minRows={2}
                 required
               />
             </Grid>
+
+          
+
+           <Grid item xs={12}>
+  <Button
+    component="label"
+    fullWidth
+    variant="outlined"
+    startIcon={<CloudUploadIcon />}
+  >
+    {event.certificateFile ? "Change Certificate" : "Upload Certificate (Optional)"}
+    <input
+      type="file"
+      accept=".docx"
+      hidden
+      onChange={handleFileChange}
+    />
+  </Button>
+
+  {event.certificateFile && (
+    <Typography variant="body2" sx={{ mt: 1, wordBreak: "break-all" }}>
+      Selected File: <strong>{event.certificateFile.name}</strong>
+    </Typography>
+  )}
+</Grid>
+
 
             <Grid item xs={12}>
               <Button
