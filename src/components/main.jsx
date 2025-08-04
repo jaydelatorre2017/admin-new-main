@@ -163,7 +163,7 @@ function DemoPageContent({ pathname }) {
     case '/events/editor': return <AddResident />;
     case '/evaluation': return <EvaluationParticipant />;
     case '/id-management':
-      window.location.href = 'http://localhost:3001/all-digital-id';
+      window.location.href = 'https://admin-new-main.vercel.app/all-digital-id';
       return null;
     case '/logs': return <AttendanceLogs />;
     case '/activity/list':return <ActivityList/>
@@ -301,3 +301,4 @@ DashboardLayoutSlots.propTypes = {
 
 // Export the component as default
 export default DashboardLayoutSlots;
+
