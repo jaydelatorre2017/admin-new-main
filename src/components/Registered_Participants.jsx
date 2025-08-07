@@ -101,7 +101,7 @@ const RegistrationTable = () => {
   const handleExportCSV = () => {
     if (!filtered.length) return;
 
-    const fields = ['full_name','email_address','division_name','district_name','school','or_number','payment_date','food_restriction','position','registration_date'];
+    const fields = ['full_name','email_address','division_name','district_name','school','or_receipt_url','payment_date','food_restriction','position','registration_date'];
     const csv = [
       fields.join(','),
       ...filtered.map(row => fields.map(field => JSON.stringify(row[field] ?? "")).join(','))
