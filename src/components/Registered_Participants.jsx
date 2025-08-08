@@ -1,20 +1,4 @@
-Conversation opened. 1 unread message.
 
-Skip to content
-Using Department of Education Mail with screen readers
-
-1 of 5,270
-code update
-Inbox
-
-jhon brayn rafer
-Attachments
-4:18 PM (1 minute ago)
-to me
-
-
- 6 Attachments
-  •  Scanned by Gmail
 import { useEffect, useState } from "react";
 import {
   Typography, TextField, CircularProgress,Paper, Button, MenuItem, useTheme, Box,IconButton, Tooltip 
@@ -123,7 +107,7 @@ const RegistrationTable = () => {
   const handleExportCSV = () => {
     if (!filtered.length) return;
 
-    const fields = ['full_name','email_address','phone_number','division_name','district_name','school','or_number','payment_date','food_restriction','position','registration_date'];
+    const fields = ['full_name','email_address','division_name','district_name','school','or_number','payment_date','food_restriction','position','registration_date'];
     const csv = [
       fields.join(','),
       ...filtered.map(row => fields.map(field => JSON.stringify(row[field] ?? "")).join(','))
@@ -436,5 +420,3 @@ const handleUpdateCertificateAccess = async (access) => {
 };
 
 export default RegistrationTable;
-admin.txt
-Displaying admin.txt.
