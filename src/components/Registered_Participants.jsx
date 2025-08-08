@@ -1,3 +1,20 @@
+Conversation opened. 1 unread message.
+
+Skip to content
+Using Department of Education Mail with screen readers
+
+1 of 5,270
+code update
+Inbox
+
+jhon brayn rafer
+Attachments
+4:18 PM (1 minute ago)
+to me
+
+
+ 6 Attachments
+  •  Scanned by Gmail
 import { useEffect, useState } from "react";
 import {
   Typography, TextField, CircularProgress,Paper, Button, MenuItem, useTheme, Box,IconButton, Tooltip 
@@ -10,6 +27,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import { API_URL, headername, keypoint } from "../utils/config";
 import LockOpenIcon from "@mui/icons-material/LockOpen"; // for grant access
 import LockIcon from "@mui/icons-material/Lock"; // for revoke access
+import EditIcon from "@mui/icons-material/Edit";
+import { useNavigate } from "react-router-dom"; // make sure this is imported
+
+// Inside your component
 
 const CustomNoRowsOverlay = () => (
   <Box className="flex flex-col items-center justify-center h-full">
@@ -22,6 +43,7 @@ const RegistrationTable = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
+  const navigate = useNavigate();
   const [registrations, setRegistrations] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -101,7 +123,7 @@ const RegistrationTable = () => {
   const handleExportCSV = () => {
     if (!filtered.length) return;
 
-    const fields = ['full_name','email_address','division_name','district_name','school','or_receipt_url','payment_date','food_restriction','position','registration_date'];
+    const fields = ['full_name','email_address','phone_number','division_name','district_name','school','or_number','payment_date','food_restriction','position','registration_date'];
     const csv = [
       fields.join(','),
       ...filtered.map(row => fields.map(field => JSON.stringify(row[field] ?? "")).join(','))
@@ -289,6 +311,25 @@ const handleUpdateCertificateAccess = async (access) => {
     { field: 'food_restriction', headerName: 'Food Restriction', width: 200 },
     { field: 'registration_date', headerName: 'Date Registered', width: 180 },
     {field:'certificate_access', headerName: 'Certificate Access', width: 180, renderCell: ({ value }) => value ? 'Yes' : 'No' },
+      {
+    field: 'actions',
+    headerName: 'Actions',
+    width: 100,
+    sortable: false,
+    filterable: false,
+    renderCell: (params) => (
+      <Tooltip title="Edit">
+        <IconButton
+          color="primary"
+            onClick={() => {
+          window.location.href = `https://rael.depedcamnorte.ph/update/${params.row.id}`;
+        }}
+        >
+          <EditIcon />
+        </IconButton>
+      </Tooltip>
+    ),
+  },
   ];
 
   return (
@@ -395,3 +436,5 @@ const handleUpdateCertificateAccess = async (access) => {
 };
 
 export default RegistrationTable;
+admin.txt
+Displaying admin.txt.
